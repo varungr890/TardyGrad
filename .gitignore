@@ -1,0 +1,26 @@
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# Real-time collaboration state written by jupyter-collaboration.
+# .jupyter_ystore.db is the CRDT edit history and grows without bound.
+.jupyter/
+.jupyter_ystore.db
+
+# --- generated artifacts ---
+# Rendered by Q1a_combined.ipynb and embedded in its output cells,
+# so committing it would duplicate ~840KB already in the notebook.
+pc_animation.gif
+
+# --- datasets ---
+MNIST/
+data/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_convert/
+
+# --- macOS ---
+.DS_Store
