@@ -1,5 +1,4 @@
 # Q1: Does PC Significantly Improve HL Performance Compared to BP?
----
 
 ## Research Question
 
