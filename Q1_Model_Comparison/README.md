@@ -4,7 +4,7 @@
 
 > Backpropagation (BP) is the main gradient descent method in current Machine Learning literature. However, the forward and backward passes use symmetric weights during learning for error-based updates, which is not biologically plausible. Recent neuromorphic computing methods propose variants of Hebbian Learning (HL) implementations as alternatives to backpropagation such as Weight Perturbation, Node Perturbation, Feedback Alignment, Kolen-Pollack and Predictive Coding (PC) algorithms. For our first question, we ask whether PC improves the performance of simpler HL methods towards convergence as fast as BP.
 
-In short: BP is the accuracy benchmark, but it's biologically implausible. Several bio-plausible alternatives exist at different levels of sophistication — this directory compares them, with Predictive Coding (PC) tested specifically against a simpler HL variant (Node Perturbation) and against BP, to see whether PC's added complexity actually buys anything.
+In short: BP is the accuracy benchmark, but it's biologically implausible. PC is the group's focal candidate for closing that gap — this directory tests it directly against a simpler HL baseline (Node Perturbation) and against BP, to see whether PC's added complexity actually earns its keep.
 
 ## Directory Structure
 
@@ -19,7 +19,7 @@ Q1_Model_Comparison/
 
 ## `Node_Perturbation/`
 
-The simpler HL variant named in the question above, developed and tuned separately before being folded into the combined comparison below. Implemented, tuned across four stages, and benchmarked directly against BP and standard Hebbian learning on full **10-class** MNIST. See the subdirectory's own README for details; headline numbers from that separate 10-class run:
+The simpler HL baseline PC is measured against. Implemented, tuned across four stages, and benchmarked separately against BP and standard Hebbian learning on full **10-class** MNIST. See the subdirectory's own README for details; headline numbers from that separate 10-class run:
 
 | Rule | Accuracy (5 seeds, 10-class) |
 |---|---|
@@ -35,15 +35,11 @@ The actual side-by-side comparison this question asks for: BP, Hebbian, Node Per
 
 | Rule | Final loss | Final accuracy | Notes |
 |---|---|---|---|
+| **Predictive coding** | 0.5674 | **99.17%** | Loss is inflated by a known scale artifact (trained against squared error on a linear output) — accuracy, not loss, is the fair read of its decision quality |
 | Backprop | 0.0406 | 98.86% | |
-| Node perturbation | 0.0525 | 98.60% | Loss is directly comparable to backprop's — same NLL scale |
-| Predictive coding | 0.5674 | 99.17% | Loss is inflated by a known scale artifact (trained against squared error on a linear output); accuracy is the fairer read here |
-| Hebbian | 3.0925 | 36.07% | Peaks near 54% around epoch 4, then diverges — loss climbs for the rest of training even as predictions stop improving. Diagnosed in the notebook's own section on Hebbian's failure mode. |
+| Node perturbation | 0.0525 | 98.60% | Simpler HL baseline PC is measured against |
+| Hebbian | 3.0925 | 36.07% | Peaks near 54% around epoch 4, then diverges |
 
-**Answer to Q1, from this run:** PC does not show a decisive edge over the simpler node perturbation rule here — node perturbation's accuracy sits within 0.6 points of PC's, and its loss doesn't need PC's calibration caveat to be read fairly. Hebbian, at the settings tested, does not converge on this task.
+**Answer to Q1, from this run:** predictive coding does converge, and it does narrowly hold the top accuracy of the four rules (99.17%). But the margin over the simplest alternative tested — node perturbation, a rule with no inference dynamics at all — is under a point (0.57), and PC pays a real structural cost to get there: its inference step relaxes over 20 timesteps *per batch* before every single weight update, far more computation per training step than node perturbation's two forward passes or backprop's one forward-and-backward pass. Its raw loss number looks like the worst of the three working rules, but that's the scale artifact above, not worse learning — accuracy is what should be read for PC specifically. Taken together, the honest version of Q1's answer is: **PC converges and edges out the simpler HL baseline here, but the margin is narrow enough, and the per-step cost high enough, that its added complexity is not yet clearly justified by this result.** Hebbian, at the settings tested, does not converge on this task at all, so it isn't a meaningful comparison point for PC either way.
 
-**Caveat — single seed.** This table comes from one run per rule (`seed=0`). Node perturbation's own reliability across seeds has been separately confirmed on this same 3-class task — 98.0% ± 0.2% across 5 seeds, in `Node_Perturbation/`'s own notebook — so its 98.60% here is consistent with a stable result, not a lucky draw. That check hasn't been run for backprop, Hebbian, or PC in this notebook; their single-run numbers above should be read as a first pass, not a final word on how stable each rule is across seeds.
-
-## Note on comparing across contributors
-
-A comparison is only as fair as the tuning effort behind each entry. Node perturbation's settings (`noise_std=0.15, lr=0.01`) reflect four rounds of hyperparameter sweeps in a companion notebook; it isn't clear from `Q1a_combined.ipynb` alone whether PC's and Hebbian's settings received a comparable pass, or whether they're running at first-working defaults. If the latter, PC's and Hebbian's results here may understate what those rules are actually capable of — worth checking with whoever owns each implementation before treating this table as Q1's final answer.
+**Caveat — single seed, and an open question specifically for PC.** This table comes from one run per rule (`seed=0`). Node perturbation's own reliability across seeds has been separately confirmed on this same 3-class task (98.0% ± 0.2% across 5 seeds), so its number here is known to be stable, not a lucky draw. That same check has not been run for PC. This cuts both ways for reading PC's result: if PC is running at a first-working configuration rather than a tuned one, its already-narrow edge might have real headroom to grow with tuning — or it might be more fragile than a single run suggests, since it hasn't been stress-tested the way node perturbation has. Worth resolving with whoever owns the PC implementation before treating either reading as the team's final answer.
