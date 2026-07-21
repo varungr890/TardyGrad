@@ -1,40 +1,50 @@
 # Q1: Does PC Significantly Improve HL Performance Compared to BP?
+---
 
 ## Research Question
 
 > Backpropagation (BP) is the main gradient descent method in current Machine Learning literature. However, the forward and backward passes use symmetric weights during learning for error-based updates, which is not biologically plausible. Recent neuromorphic computing methods propose variants of Hebbian Learning (HL) implementations as alternatives to backpropagation such as Weight Perturbation, Node Perturbation, Feedback Alignment, Kolen-Pollack and Predictive Coding (PC) algorithms. For our first question, we ask whether PC improves the performance of simpler HL methods towards convergence as fast as BP.
 
-In short: BP is the accuracy benchmark, but it's biologically implausible. Several bio-plausible alternatives exist at different levels of sophistication — this directory compares them, with Predictive Coding (PC) tested specifically against the simpler HL variants and against BP, to see whether the added complexity of PC actually buys anything.
+In short: BP is the accuracy benchmark, but it's biologically implausible. Several bio-plausible alternatives exist at different levels of sophistication — this directory compares them, with Predictive Coding (PC) tested specifically against a simpler HL variant (Node Perturbation) and against BP, to see whether PC's added complexity actually buys anything.
 
 ## Directory Structure
 
 ```
-Q1/
-├── node_perturbation/
+Q1_Model_Comparison/
+├── Node_Perturbation/
 │   ├── Node_Perturbation_copy_of_MLP_with_backprop_and_Hebbian.ipynb
-│   ├── MLP_with_Node_Perturbation.ipynb
+│   ├── MLP_with_node_perturbation.ipynb
 │   └── README.md
 └── Q1a_combined.ipynb
 ```
 
-## `node_perturbation/`
+## `Node_Perturbation/`
 
-One of the simpler HL variants named in the question above. Implemented, tuned across four stages, and benchmarked directly against BP and standard Hebbian learning on full 10-class MNIST. See the subdirectory's own README for details; headline numbers:
+The simpler HL variant named in the question above, developed and tuned separately before being folded into the combined comparison below. Implemented, tuned across four stages, and benchmarked directly against BP and standard Hebbian learning on full **10-class** MNIST. See the subdirectory's own README for details; headline numbers from that separate 10-class run:
 
-| Rule | Accuracy (5 seeds) |
+| Rule | Accuracy (5 seeds, 10-class) |
 |---|---|
 | Backprop | 92.28% ± 0.08% |
 | Node perturbation | 86.70% ± 0.73% |
 | Hebbian | 10.95% (collapsed to a single predicted class) |
 
-This gives Q1 a concrete data point on the "simpler HL methods" side of the question: node perturbation, once tuned, converges reliably and learns all ten classes — a meaningfully higher bar than plain Hebbian learning cleared at the settings tested here.
-
 ## `Q1a_combined.ipynb`
 
-The aggregate comparison this question is actually asking for: BP, the HL variants (node perturbation, and whichever of weight perturbation / feedback alignment / Kolen-Pollack the team implements), and PC, evaluated side by side on the same task. This is where Q1 gets its final answer — whether PC's added complexity measurably closes the gap to BP faster than the simpler HL methods do, or whether it performs comparably to something like node perturbation without the extra machinery.
+The actual side-by-side comparison this question asks for: BP, Hebbian, Node Perturbation, and Predictive Coding, all trained on the same **3-class**, 10-epoch task, sharing a single interface (`Learner` → `train_batch()`/`probs()`) so every rule is trained and evaluated identically. Note this uses a different, easier task (3 classes, not 10) than `Node_Perturbation/`'s standalone benchmark above — the two shouldn't be compared directly against each other.
 
-**Status:** node perturbation's numbers above are ready to drop into this comparison. PC and any additional HL variants still need their own tuned results before Q1 can be answered in full — this file should be updated once those land, following the same format (mean ± std across matched seeds, same task, same epoch count) so the comparison stays fair across contributors.
+**Current results** (single run, seed=0, all four rules):
+
+| Rule | Final loss | Final accuracy | Notes |
+|---|---|---|---|
+| Backprop | 0.0406 | 98.86% | |
+| Node perturbation | 0.0525 | 98.60% | Loss is directly comparable to backprop's — same NLL scale |
+| Predictive coding | 0.5674 | 99.17% | Loss is inflated by a known scale artifact (trained against squared error on a linear output); accuracy is the fairer read here |
+| Hebbian | 3.0925 | 36.07% | Peaks near 54% around epoch 4, then diverges — loss climbs for the rest of training even as predictions stop improving. Diagnosed in the notebook's own section on Hebbian's failure mode. |
+
+**Answer to Q1, from this run:** PC does not show a decisive edge over the simpler node perturbation rule here — node perturbation's accuracy sits within 0.6 points of PC's, and its loss doesn't need PC's calibration caveat to be read fairly. Hebbian, at the settings tested, does not converge on this task.
+
+**Caveat — single seed.** This table comes from one run per rule (`seed=0`). Node perturbation's own reliability across seeds has been separately confirmed on this same 3-class task — 98.0% ± 0.2% across 5 seeds, in `Node_Perturbation/`'s own notebook — so its 98.60% here is consistent with a stable result, not a lucky draw. That check hasn't been run for backprop, Hebbian, or PC in this notebook; their single-run numbers above should be read as a first pass, not a final word on how stable each rule is across seeds.
 
 ## Note on comparing across contributors
 
-Same caveat that applies inside `node_perturbation/`, worth repeating at this level since more rules are being added here: a comparison is only as fair as the tuning effort behind each entry. If PC or another HL variant is reported at its first working configuration while node perturbation reflects four rounds of sweeps, the comparison will make PC look worse than it might actually be, not because it *is* worse. Before finalizing Q1's answer, confirm each rule in `hl_performance_model_comparisons.md` got a comparable tuning pass — or note explicitly, per rule, when it didn't.
+A comparison is only as fair as the tuning effort behind each entry. Node perturbation's settings (`noise_std=0.15, lr=0.01`) reflect four rounds of hyperparameter sweeps in a companion notebook; it isn't clear from `Q1a_combined.ipynb` alone whether PC's and Hebbian's settings received a comparable pass, or whether they're running at first-working defaults. If the latter, PC's and Hebbian's results here may understate what those rules are actually capable of — worth checking with whoever owns each implementation before treating this table as Q1's final answer.
