@@ -156,7 +156,7 @@ A Neuromatch Academy pod. GitHub handles filled in where known — members, plea
 |---|---|
 | Varun Chokshi | [@varungr890](https://github.com/varungr890) |
 | Dylan Picart | [@dylanpicart](https://github.com/dylanpicart) |
-| Alexandre Gomes Caldeira | @— |
+| Alexandre Gomes Caldeira | [@alexandre-caldeira](https://github.com/alexandre-caldeira) |
 | Lukas Valenzuela | @— |
 | Bruno Bustos | [@BrunoBustos96](https://github.com/BrunoBustos96) |
 | Sean Afridi | @— |
